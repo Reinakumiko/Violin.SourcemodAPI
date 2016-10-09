@@ -1,0 +1,146 @@
+﻿@using Violin.SourceMod.Classes;
+@using Violin.SourceMod.Interface;
+@model Function
+
+@{
+	ViewBag.Title = Model.Name;
+}
+<!-- 响应式导航条 -->
+<div class="divNavbar">
+	<nav class="navbar navbar-default">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar-header" aria-expanded="false">
+					<span class="sr-only">展开</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href=".">SourceMod 函数查询站</a>
+			</div>
+		</div>
+		<div class="collapse navbar-collapse" id="bs-navbar-header">
+			<ul class="nav navbar-nav">
+				<li><a href="/@Model.IncludeName">@string.Format("{0}.inc", Model.IncludeName)</a></li>
+				<li><a href="/@Model.IncludeName/@Model.Name">@Model.Name 函数</a></li>
+			</ul>
+			<hr />
+			<ul class="nav navbar-nav">
+				<li><a href=".">主页</a></li>
+				<li><a href="javascript:void(0)" onclick="FunctionListMenu(true);">文件列表</a></li>
+				<li><a href="javascript:void(0)" onclick="FunctionListMenu(true);">函数搜索</a></li>
+				<li><a href="/@Model.IncludeName/_file">查看文件</a></li>
+			</ul>
+		</div>
+	</nav>
+</div>
+
+<!-- 站点导航 -->
+<div class="divTopStatusSlider">
+	<ol class="breadcrumb">
+		<li><a href="/@Model.IncludeName">@string.Format("{0}.inc", Model.IncludeName)</a></li>
+		<li>@string.Format("{0}", Model.Type == "forward" ? "事件" : "函数") </li>
+		<li class="active">@Model.Name</li>
+		<li class="pull-right"><a href="/@Model.IncludeName/_file">查看文件</a></li>
+	</ol>
+</div>
+<div class="divFunctionTitle">
+	@Model.Name @string.Format("{0}", Model.Type == "forward" ? "事件" : "函数")
+</div>
+<div class="divFunctionDescription">
+	@Html.Raw(Model.GetCommentHtml())
+</div>
+
+<div class="functionDefines">
+	<code style="margin: 2px 5px; background: none; color: inherit;">
+		@{
+			@Html.Raw(Model.GetHtmlContent())
+		}
+	</code>
+</div>
+
+@if (Model.Params != null)
+{
+	<div style="margin: 20px 0px; margin-top: 50px; font-size: 18px;">
+		参数说明
+	</div>
+	<div class="divParameters">
+		@foreach (var item in Model.Params)
+		{
+			<div style="margin: 10px; font-size: 13px;">
+				<div>@Html.Raw(item.TypeName.GetTypeColoredHtml()) @item.Name</div>
+				<div style="margin-left: 40px;">@Html.Raw(item.GetCommentHtml())</div>
+			</div>
+		}
+	</div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.ReturnValue))
+{
+	<div class="divReturnDescription">
+		<div class="bs-callout bs-callout-info">
+			<h4>返回</h4>
+			<div class="bs-callout-message">@Model.ReturnValue</div>
+		</div>
+	</div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.Error))
+{
+	<div class="divErrorDescription">
+		<div class="bs-callout bs-callout-danger">
+			<h4>错误</h4>
+			@Model.Error
+		</div>
+	</div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.Note))
+{
+	<div class="divNoteDescription">
+		<div class="bs-callout">
+			<h4>备注</h4>
+			@Model.Note
+		</div>
+	</div>
+}
+
+<div class="divMethodSyntax">
+	<div class="bs-callout bs-callout-green">
+		<h4>代码示例</h4>
+		<pre class="language-cpp noSwipe"><code class="language-cpp">public APLRes AskPluginLoad2(Handle:myself, bool:late, String:error[], int err_max)
+{
+	RegPluginLibrary("mypluginLibrary");
+	return APLRes_Success;
+}</code></pre>
+	</div>
+</div>
+
+<div class="divUserComment">
+	<div class="bs-callout bs-callout-cyan">
+		<h4>2 条评论</h4>
+		<div class="userComments">
+
+			<div class="userCommentBody">
+				<div class="userCommentTitle">Kumiko <small class="userCommentDate">at @DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")</small><span class="userCommentControl"><small>管理<i class="icon-caret-down"></i></small></span></div>
+				<div class="userCommantContent" style="padding: 10px; background-color: #23c6c8; border-radius: 5px; color: #FFF; display: inline-block;">This function will call before than other all functions.</div>
+			</div>
+
+			<!--
+			<div class="panel panel-default">
+				<div class="panel-heading"><a href="#">Kumiko</a> <span style="float: right"><small>at @DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")</small></span></div>
+				<div class="panel-body" style="padding: 20px;">
+					This function will call before than other all functions.
+				</div>
+			</div>
+			-->
+			
+			<div class="panel panel-default">
+				<div class="panel-heading"><a href="#">Nanori</a> <span style="float: right"><small>at @DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")</small></span></div>
+				<div class="panel-body" style="padding: 20px;">
+					You can register plugin library in this function.
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

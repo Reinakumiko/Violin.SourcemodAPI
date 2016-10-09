@@ -1,0 +1,72 @@
+﻿@using Violin.SourceMod.Classes;
+@model Typedef
+
+@{
+	ViewBag.Title = Model.Name;
+}
+
+<!-- 响应式导航条 -->
+<div class="divNavbar">
+	<nav class="navbar navbar-default">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar-header" aria-expanded="false">
+					<span class="sr-only">展开</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href=".">SourceMod 函数查询站</a>
+			</div>
+		</div>
+		<div class="collapse navbar-collapse" id="bs-navbar-header">
+			<ul class="nav navbar-nav">
+				<li><a href="/@Model.IncludeName">@string.Format("{0}.inc", Model.IncludeName)</a></li>
+				<li><a href="/@Model.IncludeName/@Model.Name">@Model.Name 回调函数</a></li>
+			</ul>
+			<hr />
+			<ul class="nav navbar-nav">
+				<li><a href=".">主页</a></li>
+				<li><a href="javascript:void(0)" onclick="FunctionListMenu(true);">文件列表</a></li>
+				<li><a href="javascript:void(0)" onclick="FunctionListMenu(true);">函数搜索</a></li>
+				<li><a href="/@Model.IncludeName/_file">查看文件</a></li>
+			</ul>
+		</div>
+	</nav>
+</div>
+
+<!-- 站点导航 -->
+<div class="divTopStatusSlider">
+    <ol class="breadcrumb">
+        <li><a href="/@Model.IncludeName">@string.Format("{0}.inc", Model.IncludeName)</a></li>
+        <li>回调函数</li>
+        <li class="active">@Model.Name</li>
+        <li class="pull-right"><a href="/@Model.IncludeName/_file">查看文件</a></li>
+    </ol>
+</div>
+<div class="divFunctionTitle">
+    @Model.Name 回调函数
+</div>
+<div class="divFunctionDescription">
+    @Html.Raw(Model.GetCommentHtml())
+</div>
+
+<div class="functionDefines">
+    <code style="margin: 2px 5px; background: none;">@Html.Raw(Model.FullFunction)</code>
+</div>
+
+@if(Model.Params != null)
+{
+    <div style="margin: 20px 0px; margin-top: 50px; font-size: 18px;">
+        参数说明
+    </div>
+    <div class="divParameters">
+        @foreach (var item in Model.Params)
+        {
+            <div style="margin: 10px; font-size: 13px;">
+            <div>@Html.Raw(item.TypeName.GetTypeColoredHtml()) @item.Name</div>
+            <div style="margin-left: 40px;">@Html.Raw(item.GetCommentHtml())</div>
+            </div>
+        }
+    </div>
+}

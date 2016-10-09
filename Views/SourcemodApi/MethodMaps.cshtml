@@ -1,0 +1,119 @@
+﻿@using Violin.SourceMod.Classes;
+@model MethodMap
+
+@{
+	ViewBag.Title = Model.Name;
+}
+
+<!-- 响应式导航条 -->
+<div class="divNavbar">
+	<nav class="navbar navbar-default">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar-header" aria-expanded="false">
+					<span class="sr-only">展开</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href=".">SourceMod 函数查询站</a>
+			</div>
+		</div>
+		<div class="collapse navbar-collapse" id="bs-navbar-header">
+			<ul class="nav navbar-nav">
+				<li><a href="/@Model.IncludeName">@Model.IncludeName</a></li>
+				<li><a href="/@Model.IncludeName/@Model.Name">@Model.Name 类</a></li>
+			</ul>
+			<hr />
+			<ul class="nav navbar-nav">
+				<li><a href=".">主页</a></li>
+				<li><a href="javascript:void(0)" onclick="FunctionListMenu(true);">文件列表</a></li>
+				<li><a href="javascript:void(0)" onclick="FunctionListMenu(true);">函数搜索</a></li>
+				<li><a href="/@Model.IncludeName/_file">查看文件</a></li>
+			</ul>
+		</div>
+	</nav>
+</div>
+
+<!-- 站点导航 -->
+<div class="divTopStatusSlider">
+    <ol class="breadcrumb">
+        <li><a href="/@Model.IncludeName">@string.Format("{0}.inc", Model.IncludeName)</a></li>
+        <li>类成员 </li>
+        <li class="active">@Model.Name</li>
+        <li class="pull-right"><a href="/@Model.IncludeName/_file">查看文件</a></li>
+    </ol>
+</div>
+<div class="divFunctionTitle">
+    @Model.Name 类<div class="divWarningIcon"><span class="icon-question-sign" aria-hidden="true" data-title="什么是类?" data-content='类是一个对象集合体，类中存放了该集合的一系列动作(方法)跟特性(属性)。'></span><span class="icon-exclamation-sign" aria-hidden="true" data-title="类成员的调用方法" data-content='类中所有的属性、方法都统称为成员。类中的所有成员都是以"类名.成员"的方式调用的。不同的是，方法的使用方式跟函数一样，而属性的使用方式则跟变量一样。'></span></div>
+</div>
+
+@{
+	var linkString = "#";
+	
+	if(ViewBag.Extends != null)
+	{
+		var parentClass = ViewBag.Extends as MemberPosition;
+		linkString = string.Format("/{0}/{1}", parentClass.IncludeName, parentClass.Name);
+	}
+}
+
+<div class="divFunctionDescription">
+	<div>@Html.Raw(Model.GetCommentHtml())</div>
+	<div>该类继承自 <a href="@linkString">@Model.Extends</a></div>
+</div>
+
+@{
+    if(Model.Methods != null)
+    {
+        <div>
+            <div class="divDefineTitle"><span class="divTableTitle">类中的方法 </span><span class="badge">@Model.Methods.Count</span></div>
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>方法名</th>
+                        <th>方法描述</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var funcInfo in Model.Methods)
+                    {
+						var IsLinked = funcInfo.LinkToName != null;
+						var function = Model.IncludeFile.Functions.Find(item => item.Name == funcInfo.LinkToName);
+						
+                        <tr>
+                            <td class="col-md-2 mono"><a href="/@Model.IncludeName/@Model.Name/@funcInfo.Name">@funcInfo.Name</a></td>
+                            <td>@Html.Raw(IsLinked ? function.GetCommentHtml() : funcInfo.GetCommentHtml())</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    if(Model.Proprties != null && Model.Proprties.Count > 0)
+    {
+        <div>
+            <div class="divDefineTitle"><span class="divTableTitle">类中的属性 </span><span class="badge">@Model.Proprties.Count</span></div>
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th class="col-md-2 mono">属性名称</th>
+                        <th class="col-md-1 mono">属性类型</th>
+                        <th>属性描述</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var paramInfo in Model.Proprties)
+                    {
+                        <tr>
+                            <td><a href="/@Model.IncludeName/@Model.Name/@paramInfo.Name">@paramInfo.Name</a></td>
+                            <td>@(Html.Raw(paramInfo.Type.GetTypeColoredHtml()))</td>
+                            <td>@Html.Raw(paramInfo.GetCommentHtml())</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+}

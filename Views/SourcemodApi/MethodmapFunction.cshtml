@@ -1,0 +1,143 @@
+﻿@using Violin.SourceMod.Classes;
+@model Method
+
+@{
+    ViewBag.Title = string.Format("{0}.{1}", Model.ClassName, Model.Name);
+}
+
+@{
+	var IsLink = (bool)ViewBag.IsLink;
+	var Origin = ViewBag.Origin as Function;
+}
+
+<!-- 响应式导航条 -->
+<div class="divNavbar">
+	<nav class="navbar navbar-default">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar-header" aria-expanded="false">
+					<span class="sr-only">展开</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href=".">SourceMod 函数查询站</a>
+			</div>
+		</div>
+		<div class="collapse navbar-collapse" id="bs-navbar-header">
+			<ul class="nav navbar-nav">
+				<li><a href="/@Model.MethodMap.IncludeName">@string.Format("{0}.inc", Model.MethodMap.IncludeName)</a></li>
+				<li><a href="/@Model.MethodMap.IncludeName/@Model.ClassName">@Model.ClassName 类</a></li>
+				<li><a href="/@Model.MethodMap.IncludeName/@Model.ClassName/@Model.Name">@Model.Name 方法</a></li>
+			</ul>
+			<hr />
+			<ul class="nav navbar-nav">
+				<li><a href=".">主页</a></li>
+				<li><a href="javascript:void(0)" onclick="FunctionListMenu(true);">文件列表</a></li>
+				<li><a href="javascript:void(0)" onclick="FunctionListMenu(true);">函数搜索</a></li>
+				<li><a href="/@Model.MethodMap.IncludeName/_file">查看文件</a></li>
+			</ul>
+		</div>
+	</nav>
+</div>
+
+<!-- 站点导航 -->
+<div class="divTopStatusSlider">
+    <ol class="breadcrumb">
+        <li><a href="/@Model.MethodMap.IncludeName">@string.Format("{0}.inc", Model.MethodMap.IncludeName)</a></li>
+        <li>类</li>
+        <li><a href="/@Model.MethodMap.IncludeName/@Model.ClassName">@Model.ClassName</a></li>
+        <li>方法</li>
+        <li class="active">@Model.Name</li>
+        <li class="pull-right"><a href="/@Model.MethodMap.IncludeName/_file">查看文件</a></li>
+    </ol>
+</div>
+<div class="divFunctionTitle">
+    @string.Format("{0}.{1}", Model.ClassName, Model.Name) 方法<div class="divWarningIcon"><span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-title="什么是方法?" data-content='在类中所定义的函数称之为方法。'></span><span class="glyphicon glyphicon-info-sign" aria-hidden="true" data-title="构造与析构函数" data-content='在类的方法中，与类名名字相同的方法称之为构造函数，用于初始化类对象。与类名名字相同，但名字前有~号的(~类名)方法称之为析构函数，用于在该类生命结束时处理后事的，多用于释放类对象所占用的资源。'></span></div>
+</div>
+<div class="divFunctionDescription">
+    @Html.Raw(IsLink ? Origin.GetCommentHtml() : Model.GetCommentHtml())
+</div>
+
+@if(IsLink)
+{
+	<div class="alert alert-danger alert-dismissible" role="alert">
+		<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+		<div><strong>注意!</strong> 该方法的定义被连接到了 @Model.LinkToName 函数, 本页面将套用 @Model.LinkToName 的定义。</div>
+	</div>
+}
+
+<div class="alert alert-warning alert-dismissible" role="alert">
+	<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	@if (Model.Name == Model.ClassName || Model.Name == string.Format("~{0}", Model.ClassName))
+	{
+		<div><strong>构造/析构函数</strong> 无法以正常形式调用。构造函数会在类初始化时被调用, 而析构函数会在释放类的时候被调用。</div>
+		<div>通常以 <code>@string.Format("{0} myClass = new {0}();", Model.ClassName)</code> 的方式实例化一个新的类对象, 使用 <code>delete myClass;</code> 来释放类对象。</div>
+	}
+	else if(IsLink)
+	{
+		<div>该方法使用时任然使用 <strong>@string.Format("{0}.{1}()", Model.ClassName, Model.Name)</strong> 的方式调用, 参数则按照以下参考。调用时无需按照 @Model.LinkToName 函数一样需要填写本身的对象。</div>
+		<div>e.g:  原型: <code>CloseHandle(Handle hndl);</code>  方法:  <code>hndl.Close();</code></div>
+	}
+	else 
+	{
+		<div>方法的调用方式为 <code>@string.Format("{0}.{1}();", Model.ClassName, Model.Name)</code></div>
+	}
+
+	<div style="margin-top: 5px;"><strong><a href="/@Model.MethodMap.IncludeName/_file">如有任何疑问, 请点击查看文件中的定义。</a></strong></div>
+</div>
+
+<div class="functionDefines">
+    <code style="margin: 2px 5px; background: none; color: inherit;" >
+		@Html.Raw(IsLink ? Origin.GetHtmlContent().Replace(Model.LinkToName, Model.Name) : Model.GetHtmlContent());
+    </code>
+</div>
+
+@if(Model.Params != null || (IsLink && Origin.Params != null))
+{
+    <div class="divFunctionPamaras">
+        参数说明
+    </div>
+    <div class="divParameters">
+        @foreach (var item in IsLink ? Origin.Params : Model.Params)
+        {
+            <div style="margin: 10px; font-size: 13px;">
+				<div>
+					@Html.Raw(item.TypeName.GetTypeColoredHtml())
+					@item.Name
+				</div>
+				<div style="margin-left: 40px;">@Html.Raw(item.GetCommentHtml())</div>
+            </div>
+        }
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.ReturnValue) || (IsLink && !string.IsNullOrWhiteSpace(Origin.ReturnValue)))
+{
+	<div class="divReturnDescription">
+		<div class="bs-callout bs-callout-info">
+			<h4>返回</h4>
+			<div class="bs-callout-message">@(IsLink ? Origin.ReturnValue : Model.ReturnValue)</div>
+		</div>
+	</div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.Error) || (IsLink && !string.IsNullOrWhiteSpace(Origin.Error)))
+{
+	<div class="divErrorDescription">
+		<div class="bs-callout bs-callout-danger">
+			<h4>错误</h4>
+			@(IsLink ? Origin.Error : Model.Error)
+		</div>
+	</div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.Note) || (IsLink && !string.IsNullOrWhiteSpace(Origin.Note)))
+{
+	<div class="divNoteDescription">
+		<div class="bs-callout">
+			<h4>备注</h4>
+			@(IsLink ? Origin.Note : Model.Note)
+		</div>
+	</div>
+}

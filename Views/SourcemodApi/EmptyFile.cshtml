@@ -1,0 +1,49 @@
+﻿@model Violin.SourceMod.Classes.Include
+@{
+	ViewBag.Title = null;
+}
+
+<!-- 响应式导航条 -->
+<div class="divNavbar">
+	<nav class="navbar navbar-default">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar-header" aria-expanded="false">
+					<span class="sr-only">展开</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href=".">SourceMod 函数查询站</a>
+			</div>
+		</div>
+		<div class="collapse navbar-collapse" id="bs-navbar-header">
+			<ul class="nav navbar-nav">
+				<li><a href="/@Model.IncludeName">@string.Format("{0}.inc", Model.IncludeName)</a></li>
+			</ul>
+			<hr />
+			<ul class="nav navbar-nav">
+				<li><a href=".">主页</a></li>
+				<li><a href="javascript:void(0)" onclick="FunctionListMenu(true);">文件列表</a></li>
+				<li><a href="javascript:void(0)" onclick="FunctionListMenu(true);">函数搜索</a></li>
+				<li><a href="/@Model.IncludeName/_file">查看文件</a></li>
+			</ul>
+		</div>
+	</nav>
+</div>
+
+<!-- 站点导航 -->
+<div class="divTopStatusSlider">
+    <ol class="breadcrumb">
+        <li><a href="/@Model.IncludeName">@string.Format("{0}.inc", Model.IncludeName)</a></li>
+        <li class="active">成员一览</li>
+        <li class="pull-right"><a href="/@Model.IncludeName/_file">查看文件</a></li>
+    </ol>
+</div>
+
+<div class="bs-callout bs-callout-danger">
+	<h4>无可显示内容</h4>
+	<div>该文件下未找到可用的定义、枚举、类与函数。</div>
+	<div>或是在程序解析源码时未解析到文件下所包含的成员。如果是未解析到成员，请到论坛提交与我们解决。</div>
+	<div style="margin-top: 30px;"><a href="/@Model.IncludeName/_file">您可以选择查看源文件获取想要的数据</a></div>
+</div>

@@ -1,0 +1,216 @@
+﻿@using Violin.SourceMod.Classes;
+@using Violin.SourceMod.Interface;
+@model Include
+
+@{
+	ViewBag.Title = null;
+}
+
+<!-- 响应式导航条 -->
+<div class="divNavbar">
+	<nav class="navbar navbar-default">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar-header" aria-expanded="false">
+					<span class="sr-only">展开</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href=".">SourceMod 函数查询站</a>
+			</div>
+		</div>
+		<div class="collapse navbar-collapse" id="bs-navbar-header">
+			<ul class="nav navbar-nav">
+				<li><a href="/@Model.IncludeName">@string.Format("{0}.inc", Model.IncludeName)</a></li>
+			</ul>
+			<hr />
+			<ul class="nav navbar-nav">
+				<li><a href=".">主页</a></li>
+				<li><a href="javascript:void(0)" onclick="FunctionListMenu(true);">文件列表</a></li>
+				<li><a href="javascript:void(0)" onclick="FunctionListMenu(true);">函数搜索</a></li>
+				<li><a href="/@Model.IncludeName/_file">查看文件</a></li>
+			</ul>
+		</div>
+	</nav>
+</div>
+
+<!-- 站点导航 -->
+<div class="divTopStatusSlider">
+    <ol class="breadcrumb">
+        <li><a href="/@Model.IncludeName">@string.Format("{0}.inc", Model.IncludeName)</a></li>
+        <li class="active">成员一览</li>
+        <li class="pull-right"><a href="/@Model.IncludeName/_file">查看文件</a></li>
+    </ol>
+</div>
+
+@{
+    if (Model.MethodMaps != null && Model.MethodMaps.Count > 0)
+    {
+        var listMethodMap = Model.MethodMaps;
+        <div class="divDefines">
+            <div class="divDefineTitle"><span class="divTableTitle">类 </span><span class="badge">@listMethodMap.Count</span></div>
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th class="col-md-2 mono">类名称</th>
+                        <th>类描述</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var methodMap in listMethodMap.OrderBy(m => m.Name))
+                    {
+                        <tr>
+                            <td><a href="/@methodMap.IncludeName/@methodMap.Name">@methodMap.Name</a></td>
+                            <td>@Html.Raw(methodMap.GetCommentHtml())</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    if (Model.Defines != null && Model.Defines.Count > 0)
+    {
+        var listDefines = Model.Defines;
+        <div class="divDefines">
+            <div class="divDefineTitle"><span class="divTableTitle">宏定义 </span><span class="badge">@listDefines.Count</span></div>
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th class="col-md-2 mono">定义名称</th>
+                        <th>定义描述</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var define in listDefines.OrderBy(d => d.Name))
+                    {
+                        <tr>
+                            <td>@define.Name</td>
+                            <td>@Html.Raw(define.GetCommentHtml())</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    if (Model.Enumerations != null && Model.Enumerations.Count > 0)
+    {
+        var listEnumerations = Model.Enumerations;
+        <div class="divEnumeration">
+            <div class="divDefineTitle">
+                <span class="divTableTitle">枚举 </span>
+                <span class="badge">@listEnumerations.Count</span>
+            </div>
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th class="col-md-2 mono">枚举名称</th>
+                        <th>枚举描述</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var enumInfo in listEnumerations.OrderBy(e => e.Name))
+                    {
+                        var Empty = enumInfo.Name == string.Empty;
+                        var enumName = Empty ? "未命名" : enumInfo.Name;
+                        var enumLink = Empty ? "#" : enumInfo.Name;
+                        var enumClass = Empty ? "data-content=无法显示未命名对象的内容，请点击查看源文件进行查看。 data-title=未命名" : "";
+                        <tr>
+                            <td><a href="/@enumInfo.IncludeName/@enumLink" @enumClass >@enumName</a></td>
+                            <td>@Html.Raw(enumInfo.GetCommentHtml())</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    
+    if (Model.TypeDefs != null || Model.TypeSets != null)
+    {
+        var listTypeDef = Model.TypeDefs ?? new List<Typedef>();
+        var listTypeSet = Model.TypeSets ?? new List<Typeset>();
+        var listTypes = listTypeDef.ToList<IBaseMembers>();
+        listTypes.AddRange(listTypeSet.ToList<IBaseMembers>());
+
+        if(listTypes.Count > 0)
+        {
+            <div class="divEnumeration">
+                <div class="divDefineTitle"><span class="divTableTitle">回调函数 </span><span class="badge">@listTypes.Count</span></div>
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th class="col-md-2 mono">函数名称</th>
+                            <th>函数描述</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var typesInfo in listTypes.OrderBy(t => t.Name))
+                        {
+                            <tr>
+                                <td><a href="/@typesInfo.IncludeName/@typesInfo.Name">@typesInfo.Name</a></td>
+                                <td>@Html.Raw(typesInfo.GetCommentHtml())</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+
+    if (Model.Functions != null && Model.Functions.Where(f => f.Type == "forward").Count() > 0)
+    {
+        var listForwards = Model.Functions.Where(f => f.Type == "forward").ToList();
+        <div class="divEnumeration">
+            <div class="divDefineTitle"><span class="divTableTitle">事件 </span><span class="badge">@listForwards.Count</span></div>
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th class="col-md-2 mono">事件名称</th>
+                        <th>事件描述</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var forwardInfo in listForwards.OrderBy(f => f.Name))
+                    {
+                        <tr>
+                            <td><a href="/@forwardInfo.IncludeName/@forwardInfo.Name">@forwardInfo.Name</a></td>
+                            <td>@Html.Raw(forwardInfo.GetCommentHtml())</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+
+    if (Model.Functions != null)
+    {
+        var listFunctions = Model.Functions.Where(f => f.Type != "forward").ToList();
+
+        if(listFunctions.Count > 0)
+        {
+            <div class="divEnumeration">
+                <div class="divDefineTitle"><span class="divTableTitle">函数 </span><span class="badge">@listFunctions.Count</span></div>
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th class="col-md-2 mono">函数名称</th>
+                            <th>函数描述</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var functionInfo in listFunctions.OrderBy(f => f.Name))
+                        {
+                            <tr>
+                                <td><a href="/@functionInfo.IncludeName/@functionInfo.Name">@functionInfo.Name</a></td>
+                                <td>@Html.Raw(functionInfo.GetCommentHtml())</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+}

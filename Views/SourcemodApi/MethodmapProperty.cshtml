@@ -1,0 +1,84 @@
+﻿@using Violin.SourceMod.Classes;
+@model Property
+
+@{
+	ViewBag.Title = string.Format("{0}.{1}", Model.ClassName, Model.Name);
+}
+
+<!-- 响应式导航条 -->
+<div class="divNavbar">
+	<nav class="navbar navbar-default">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar-header" aria-expanded="false">
+					<span class="sr-only">展开</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href=".">SourceMod 函数查询站</a>
+			</div>
+		</div>
+		<div class="collapse navbar-collapse" id="bs-navbar-header">
+			<ul class="nav navbar-nav">
+				<li><a href="/@Model.MethodMap.IncludeName">@string.Format("{0}.inc", Model.MethodMap.IncludeName)</a></li>
+				<li><a href="/@Model.MethodMap.IncludeName/@Model.ClassName">@Model.ClassName 类</a></li>
+				<li><a href="/@Model.MethodMap.IncludeName/@Model.ClassName/@Model.Name">@Model.Name 属性</a></li>
+			</ul>
+			<hr />
+			<ul class="nav navbar-nav">
+				<li><a href=".">主页</a></li>
+				<li><a href="javascript:void(0)" onclick="FunctionListMenu(true);">文件列表</a></li>
+				<li><a href="javascript:void(0)" onclick="FunctionListMenu(true);">函数搜索</a></li>
+				<li><a href="/@Model.MethodMap.IncludeName/_file">查看文件</a></li>
+			</ul>
+		</div>
+	</nav>
+</div>
+
+<!-- 站点导航 -->
+<div class="divTopStatusSlider">
+    <ol class="breadcrumb">
+        <li><a href="/@Model.MethodMap.IncludeName">@string.Format("{0}.inc", Model.MethodMap.IncludeName)</a></li>
+        <li>类</li>
+        <li><a href="/@Model.MethodMap.IncludeName/@Model.ClassName">@Model.ClassName</a></li>
+        <li>属性</li>
+        <li class="active">@Model.Name</li>
+        <li class="pull-right"><a href="/@Model.MethodMap.IncludeName/_file">查看文件</a></li>
+    </ol>
+</div>
+
+<div class="divFunctionTitle">
+    @string.Format("{0}.{1}", Model.ClassName, Model.Name) 属性<span class="glyphicon glyphicon-question-sign" aria-hidden="true" style="padding: 0px; margin: 5px; font-size: 11px; vertical-align: top;" data-title="什么是属性?" data-content='属性即类中可以直接获得的一些值，通常会以变量的形式出现。属性多用于获取或设置变量的值。'></span>
+</div>
+<div class="divFunctionDescription">
+    @Html.Raw(Model.GetCommentHtml())
+</div>
+
+
+
+<div class="alert alert-warning alert-dismissible" role="alert">
+	<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	<div>属性的调用方式为 
+		<div style="margin-left: 20px;">get <code>@string.Format("new {1} = {0}.{1};", Model.ClassName, Model.Name) </code></div>
+		<div style="margin-left: 20px;">set <code>@string.Format("{0}.{1} = {1};", Model.ClassName, Model.Name)</code></div>
+	</div>
+	<div style="margin-top: 5px;"><strong><a href="/@Model.MethodMap.IncludeName/_file">如有任何疑问, 请点击查看文件中的定义。</a></strong></div>
+</div>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>属性类型</th>
+            <th>Get访问器(Getter)</th>
+            <th>Set访问器(Setter)</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>@Model.Type</td>
+            <td>@Model.Get</td>
+            <td>@Model.Set</td>
+        </tr>
+    </tbody>
+</table>

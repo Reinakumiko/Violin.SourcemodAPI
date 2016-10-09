@@ -1,0 +1,116 @@
+﻿@using Violin.SourceMod;
+@using Violin.SourceMod.Classes;
+@model List<MemberPosition>
+
+@{
+	Layout = null;
+}
+
+
+@{
+	var listFileName = from member in Model
+					   select member.IncludeName;
+
+	listFileName = listFileName.Distinct().OrderBy(item => item);
+}
+
+
+@{
+	foreach (var name in listFileName)
+	{
+	
+		//文件中的所有成员
+		var fileMembers = from function in Model
+						  where function.IncludeName == name
+						  select function;
+
+		//普通函数成员 (native|stock|forward)
+		var functions = fileMembers.Where(item => item.Type == typeof(Function).Name).ToList();
+
+		//类
+		var methodMaps = fileMembers.Where(item => item.Type == typeof(MethodMap).Name).ToList();
+
+		//定义 (enum, typedef, typeset)
+		var typeMembers = (from function in fileMembers
+						   where new string[] { typeof(Typedef).Name, typeof(Typeset).Name, typeof(Enumeration).Name }.Contains(function.Type)
+						   select function).ToList();
+
+		var CollapseBlock = string.Format("{0}Collapse", name);
+		<div class="panel">
+			<div id="@name" class="functionFileTitle">
+				<a role="button" data-toggle="collapse" data-parent="#functionFileList_Search"  href="#@CollapseBlock" aria-expanded="false" aria-controls="@CollapseBlock" data-href="/@name">@name</a>
+			</div>
+
+			@*<div id="@CollapseBlock" class="functionInFile panel-collapse collapse">*@
+			@{
+				if (methodMaps != null && methodMaps.Count > 0)
+				{
+					<div class="panel panel-danger">
+						<div class="panel-heading">类(MethodMap)</div>
+						<div class="panel-body">
+							@foreach (var method in methodMaps.OrderBy(m => m.Name))
+							{
+								<div class="functionName" data-title="@method.Name" data-content="@method.Comment">
+									<a href="/@method.IncludeName/@method.Name">@method.Name</a>
+								</div>
+							}
+						</div>
+					</div>
+				}
+
+				if (typeMembers != null && typeMembers.Count > 0)
+				{
+					<div class="panel panel-warning">
+						<div class="panel-heading">枚举与回调(Enum & Callback)</div>
+						<div class="panel-body">
+						@foreach (var enumInfo in typeMembers.OrderBy(e => e.Name))
+						{
+							<div class="functionName" data-title="@enumInfo.Name" data-content="@enumInfo.Comment">
+								<a href="/@enumInfo.IncludeName/@enumInfo.Name">@enumInfo.Name</a>
+							</div>
+						}
+						</div>
+					</div>
+				}
+
+				var listNames = functions.Select(func => func.Name).ToList();
+				var includeFile = new DatabaseContext().Files.SingleOrDefault(item => item.IncludeName == name);
+				var functionMembers = includeFile.Functions.AsQueryable().Where(item => listNames.Contains(item.Name)).ToList();
+
+				var listForwards = functionMembers.Where(f => f.Type == "forward").ToList();
+				var listFunctions = functionMembers.Where(f => f.Type != "forward").ToList();
+
+				if (listForwards != null && listForwards.Count > 0)
+				{
+					<div class="panel panel-info">
+						<div class="panel-heading">事件(Forwards)</div>
+						<div class="panel-body">
+							@foreach (var forwards in listForwards.OrderBy(f => f.Name))
+							{
+								<div class="functionName" data-title="@forwards.Name" data-content="@forwards.Comment">
+									<a href="/@forwards.IncludeName/@forwards.Name">@forwards.Name</a>
+								</div>
+							}
+						</div>
+					</div>
+				}
+
+				if (listFunctions != null && listFunctions.Count > 0)
+				{
+					<div class="panel panel-success">
+						<div class="panel-heading">函数(Functions)</div>
+						<div class="panel-body">
+							@foreach (var func in listFunctions.OrderBy(f => f.Name))
+							{
+								<div class="functionName" data-title="@func.Name" data-content="@func.Comment">
+									<a href="/@func.IncludeName/@func.Name">@func.Name</a>
+								</div>
+							}
+						</div>
+					</div>
+				}
+			}	
+			@*</div>*@
+		</div>
+	}
+}

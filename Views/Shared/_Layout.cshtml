@@ -1,0 +1,238 @@
+﻿@using System.Text.RegularExpressions;
+@using Violin.SourceMod;
+@{
+	ViewBag.WebTitle = "Sourcemod API Reference";
+	if (ViewBag.Title == "Index")
+	{
+		ViewBag.Title = string.Format("{0} · {1}", ViewBag.Title, ViewBag.WebTitle);
+	}
+	else
+	{
+		ViewBag.Title = string.Format(ViewBag.Title == null ? "{1} · {2}" : "{0} · {1} · {2}", ViewBag.Title, ViewContext.RouteData.Values["file"], ViewBag.WebTitle);
+	}
+
+	if (this.Request.IsAjaxRequest() && this.Request.Headers["X-PJAX"] != null)
+	{
+		//移除掉已经载入的PJAX请求头
+		//防止用户刷新时造成无法载入布局页的情况
+		this.Request.Headers.Remove("X-PJAX");
+
+		//直接返回主体内容
+		//不返回布局页的布局内容
+		<div id="subtitle" style="display: none;">@ViewBag.Title</div>
+		@RenderBody()
+	
+		return;
+	}
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width" />
+	<title>@ViewBag.Title</title>
+	
+	<link href="~/Content/bootstrap.css" rel="stylesheet" />
+	<link href="~/Content/docs.min.css" rel="stylesheet" />
+	<link href="~/Content/prismjs.css" rel="stylesheet" />
+	<link href="~/Content/nprogress.css" rel="stylesheet" />
+	<link href="~/Content/font-awesome.css" rel="stylesheet" />
+	<link href="~/Content/Style.css" rel="stylesheet" />
+	<script src="~/Scripts/jquery-1.11.3.js"></script>
+	<script src="~/Scripts/jquery.touchSwipe.js"></script>
+	<script src="~/Scripts/bootstrap.js"></script>
+	<script src="~/Scripts/nprogress.js"></script>
+	<script src="~/Scripts/pjax.js"></script>
+	<script src="~/Scripts/prismjs.js"></script>
+	<script src="~/Scripts/script.js"></script>
+
+</head>
+<body>
+	<!-- 这里是左侧的选项栏 -->
+	<div class="divLeftSlider">
+		<div class="functionFile panel-group" role="tablist" aria-multiselectable="true">
+
+			<div class="divLeftSliderTitle"><a id="linkBaseUrl" href="http://@this.Request.Url.Authority">SourceMod API</a></div>
+
+			<div class="divSearchZone">
+				<form id="searchFunction" action="/Search" method="post">
+					<input id="searchName" class="inputSearchZone form-control" name="search" />
+					<span id="btnRemoveSearch" class="btnRemoveSearch" style="display: none;">×</span>
+				</form>
+			</div>
+
+			<div class="panel-group" id="functionFileList" role="tablist" aria-multiselectable="true">
+				@{
+					if (this.Cache["Database"] == null)
+					{
+						this.Cache["Database"] = new DatabaseContext();
+					}
+
+					var database = (DatabaseContext)this.Cache["Database"];
+
+					foreach (var item in database.Files.OrderBy(f => f.IncludeName).ToList())
+					{
+						var RouteData = Html.ViewContext.RouteData.Values["file"];
+						var CollapseBlock = string.Format("{0}Collapse", item.IncludeName);
+						<div class="panel panel-noborder">
+							<div id="@item.IncludeName" class="functionFileTitle">
+								<a role="button" data-toggle="collapse" data-parent="#functionFileList"  href="#@CollapseBlock" aria-expanded="false" aria-controls="@CollapseBlock" data-href="/@item.IncludeName">@item.IncludeName</a>
+							</div>
+							<div id="@CollapseBlock" class="functionInFile panel-collapse collapse @string.Format("{0}", RouteData != null && RouteData.ToString() == item.IncludeName ? "in" : "")">
+								@if (item.Functions != null)
+								{
+								   var listEnums = item.Enumerations;
+								   var listMethods = item.MethodMaps;
+								   var listForwards = item.Functions.Where(f => f.Type == "forward").ToList();
+								   var listFunctions = item.Functions.Where(f => f.Type != "forward").ToList();
+
+								   if (listMethods != null && listMethods.Count > 0)
+									{
+										<div class="panel panel-danger">
+											<div class="panel-heading">类(MethodMap)</div>
+											<div class="panel-body">
+												@foreach (var method in listMethods.OrderBy(m => m.Name))
+												{
+													<div class="functionName" data-title="@method.Name" data-content="@method.Comment">
+														<a href="/@item.IncludeName/@method.Name">@method.Name</a>
+													</div>
+												}
+											</div>
+										</div>
+									}
+
+									if ((listEnums != null && listEnums.Count > 0) || 
+										(item.TypeDefs != null && item.TypeDefs.Count > 0) || 
+										(item.TypeSets != null && item.TypeSets.Count > 0))
+									{
+										<div class="panel panel-warning">
+											<div class="panel-heading">枚举与回调(Enum & Callback)</div>
+											<div class="panel-body">
+												@{
+													if (listEnums != null && listEnums.Count > 0)
+													{
+														foreach (var enumInfo in listEnums.OrderBy(e => e.Name))
+														{
+															<div class="functionName" data-title="@enumInfo.Name" data-content="@enumInfo.Comment">
+																<a href="/@enumInfo.IncludeName/@enumInfo.Name">@enumInfo.Name</a>
+															</div>
+														}
+													}
+
+													if (item.TypeDefs != null && item.TypeDefs.Count > 0)
+													{
+														foreach (var typeDef in item.TypeDefs)
+														{
+															<div class="functionName" data-title="@typeDef.Name" data-content="@typeDef.Comment">
+																<a href="/@typeDef.IncludeName/@typeDef.Name">@typeDef.Name</a>
+															</div>
+														}
+													}
+
+													if (item.TypeSets != null && item.TypeSets.Count > 0)
+													{
+														foreach (var typeSet in item.TypeSets)
+														{
+															<div class="functionName" data-title="@typeSet.Name" data-content="@typeSet.Comment">
+																<a href="/@typeSet.IncludeName/@typeSet.Name">@typeSet.Name</a>
+															</div>
+														}
+													}
+												}
+											</div>
+										</div>
+									}
+
+									if (listForwards != null && listForwards.Count > 0)
+									{
+										<div class="panel panel-info">
+											<div class="panel-heading">事件(Forwards)</div>
+											<div class="panel-body">
+												@foreach (var forwards in listForwards.OrderBy(f => f.Name))
+												{
+													<div class="functionName" data-title="@forwards.Name" data-content="@forwards.Comment">
+														<a href="/@forwards.IncludeName/@forwards.Name">@forwards.Name</a>
+													</div>
+												}
+											</div>
+										</div>
+									}
+
+									if (listFunctions != null && listFunctions.Count > 0)
+									{
+										<div class="panel panel-success">
+											<div class="panel-heading">函数(Functions)</div>
+											<div class="panel-body">
+												@foreach (var func in item.Functions.Where(f => f.Type != "forward").OrderBy(f => f.Name))
+												{
+													<div class="functionName" data-title="@func.Name" data-content="@func.Comment">
+														<a href="/@func.IncludeName/@func.Name">@func.Name</a>
+													</div>
+												}
+											</div>
+										</div>
+									}
+								}
+							</div>
+						</div>
+					}
+				}
+			</div>
+
+			<div class="panel-group" id="functionFileList_Search" role="tablist" aria-multiselectable="true">
+
+			</div>
+		</div>
+	</div>
+
+	<!-- 这个是右侧的主窗体 -->
+	<div class="divMainBody">
+		<div id="displayBody">
+			@RenderBody()
+		</div>
+		<!-- 一个不知所以然的人的名字应该在这(页脚) -->
+		<div style="margin: 40px 0px;">
+			<div class="divBodyFooter">
+				本站由 <a href="http://steamcommunity.com/id/ReinaKumiko/">
+					<img src="http://www.srgame.cc/gywm.png" height="16" width="16" />Cee</a> 使用 .Net平台 MVC4 编写
+			</div>
+			<div class="divBodyFooter">
+				本站样式按照原站点 <a href="https://sm.alliedmods.net/new-api/">
+					<img src="https://wiki.alliedmods.net/images/wiki.png" height="16" width="16" />SourceMod Scripting API Reference</a> 风格仿制
+			</div>
+			<div class="divBodyFooter">
+				@{
+					var updateInfo = database.UpdateInfo.OrderByDescending(item => item.Reversion).FirstOrDefault() ?? new Violin.SourceMod.Classes.UpdateInfo();
+					
+					<div><span title="页面所引用库的版本">@(updateInfo.LibraryVersion ?? "Unknown Version")</span> @@ <span title="最后更新时间">@(updateInfo.LastUpdate ?? "Unknown UpdateTime")</span></div>
+				}
+			</div>
+		</div>
+		@RenderSection("scripts", required: false)
+	</div>
+
+	@*
+	<div class="divLoginPanel">
+		<!-- Modal -->
+		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title" id="myModalLabel">Modal title</h4>
+					</div>
+					<div class="modal-body">
+						...
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-primary">Save changes</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	*@
+</body>
+</html>

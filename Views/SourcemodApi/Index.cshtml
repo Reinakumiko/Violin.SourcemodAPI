@@ -1,0 +1,45 @@
+﻿@{
+    ViewBag.Title = "Index";
+}
+
+<!-- 响应式导航条 -->
+<div class="divNavbar">
+	<nav class="navbar navbar-default">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar-header" aria-expanded="false">
+					<span class="sr-only">展开</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href=".">SourceMod 函数查询站</a>
+			</div>
+		</div>
+		<div class="collapse navbar-collapse" id="bs-navbar-header">
+			<ul class="nav navbar-nav">
+				<li><a href=".">主页</a></li>
+				<li><a href="javascript:void(0)" onclick="FunctionListMenu(true);">文件列表</a></li>
+				<li><a href="javascript:void(0)" onclick="FunctionListMenu(true);">函数搜索</a></li>
+			</ul>
+		</div>
+	</nav>
+</div>
+
+<div class="divIndexTitle">
+    欢迎访问SourceMod 函数查询站
+</div>
+
+<div class="bs-callout">
+    Enter a search term on the left to look for symbols in the SourceMod include files.
+    Alternately, click a file on the left to browse its functions/symbols or see its contents.
+</div>
+<div class="bs-callout bs-callout-info">
+    <h4>需要查看更多的信息文档?</h4>
+    如需要更多的信息文档, 可以查看 <a href="https://wiki.alliedmods.net/Category:SourceMod_Scripting"><img src="https://wiki.alliedmods.net/images/wiki.png" height="16" width="16" /> SourceMod Scripting Wiki</a>, 其中包含了一些特定方向的教程内容。
+</div>
+
+<div class="bs-callout bs-callout-danger">
+    <h4>发现了网站上丢失的函数定义或者是某些功能?</h4>
+    快来 <a href="http://www.srgame.cc/forum-61-1.html"><img src="http://www.srgame.cc/gywm.png" height="16" width="16" />SrGame论坛</a> 向我们提交你所发现的错误吧! 我们会尽快的更新修复这个错误。
+</div>
